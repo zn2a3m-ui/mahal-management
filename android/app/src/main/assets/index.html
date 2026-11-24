@@ -31,7 +31,7 @@ function save(){localStorage.setItem(KEY,JSON.stringify(db));render()}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function m(v){return Number(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function today(){return new Date().toISOString().slice(0,10)}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function bal(){return sum('in')-sum('out')}function sum(t){return db.shop.cash.filter(x=>!t||x.type===t).reduce((a,x)=>a+ +x.amount,0)}
 function rem(d){return Math.max(0,+d.amount-(+d.paid||0))}
 function go(v){document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.v===v));if(v==='cash')renderCash();if(v==='debts')renderDebts();if(v==='groups')renderGroups();if(v==='personalDebts')renderPersonalDebts();scrollTo(0,0)}
