@@ -12,7 +12,7 @@ html = html.replace(old_add, new_add, 1)
 # Existing debts from earlier versions were not posted to cash. Deduct only their
 # outstanding amount; new debts are marked cashApplied and are not deducted twice.
 old_bal = "function bal(){return sum('in')-sum('out')}"
-new_bal = "function bal(){return sum('in')-sum('out')-db.shop.debts.reduce((a,d)=>a+(!d.cashApplied?rem(d):0),0)}"
+new_bal = "function legacyDebtCashBase(d){if(d.cashApplied)return 0;if(d.legacyCashBase===undefined){const initial=(d.payments||[]).filter(p=>p.note==='دفعة أولية'||p.note==='مدفوع سابقاً').reduce((a,p)=>a+(Number(p.amount)||0),0);d.legacyCashBase=Math.max(0,(Number(d.amount)||0)-initial)}return Number(d.legacyCashBase)||0}\\nfunction bal(){return sum('in')-sum('out')-db.shop.debts.reduce((a,d)=>a+legacyDebtCashBase(d),0)}"
 assert old_bal in html, 'Original shop balance function not found'
 html = html.replace(old_bal, new_bal, 1)
 
@@ -22,7 +22,7 @@ assert old_pay_tx in html, 'Original debt repayment cash movement not found'
 html = html.replace(old_pay_tx, new_pay_tx, 1)
 
 old_del = "function delDebt(id){if(confirm('حذف حساب الدين؟')){db.shop.debts=db.shop.debts.filter(x=>x.id!==id);save()}}"
-new_del = "function delDebt(id){if(confirm('حذف حساب الدين وحركاته المرتبطة من الصندوق؟')){db.shop.cash=db.shop.cash.filter(x=>x.debtId!==id);db.shop.debts=db.shop.debts.filter(x=>x.id!==id);save()}}"
+new_del = "function delDebt(id){const d=db.shop.debts.find(x=>x.id===id);if(confirm('حذف حساب الدين؟')){if(d?.cashApplied)db.shop.cash=db.shop.cash.filter(x=>x.debtId!==id);db.shop.debts=db.shop.debts.filter(x=>x.id!==id);save()}}"
 assert old_del in html, 'Original debt deletion function not found'
 html = html.replace(old_del, new_del, 1)
 
