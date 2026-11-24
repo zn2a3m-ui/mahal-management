@@ -22,6 +22,8 @@ new_monthly_handler = '$("jmi").value="40";$("jmi").readOnly=true;$("jmi").oninp
 assert old_monthly_handler in html, 'Association monthly amount control not found'
 html = html.replace(old_monthly_handler, new_monthly_handler, 1)
 
+html = html.replace('المساهمة الشهرية', 'الإضافة الشهرية للجمعية (40 د.أ إجمالاً)')
+
 group_code = Path('patches/group.js').read_text(encoding='utf-8')
 marker = '</script>'
 pos = html.rfind(marker)
