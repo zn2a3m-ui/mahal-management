@@ -96,12 +96,14 @@ public class MainActivity extends Activity {
 
     private void installBackupHooks(WebView view) {
         String script = "(function(){try{" +
-            "if(!window.__idartiStorageHooked){var original=Storage.prototype.setItem;" +
-            "Storage.prototype.setItem=function(k,v){var result=original.call(this,k,v);" +
-            "if(this===localStorage&&window.AndroidBackup){var snap={};" +
+            "if(!window.__idartiStorageHooked){var persist=function(){if(!window.AndroidBackup)return;var snap={};" +
             "for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);snap[key]=localStorage.getItem(key);}" +
-            "AndroidBackup.saveSnapshot(JSON.stringify(snap));}return result;};" +
-            "window.__idartiStorageHooked=true;}" +
+            "AndroidBackup.saveSnapshot(JSON.stringify(snap));};" +
+            "var originalSet=Storage.prototype.setItem,originalRemove=Storage.prototype.removeItem,originalClear=Storage.prototype.clear;" +
+            "Storage.prototype.setItem=function(k,v){var result=originalSet.call(this,k,v);if(this===localStorage)persist();return result;};" +
+            "Storage.prototype.removeItem=function(k){var result=originalRemove.call(this,k);if(this===localStorage)persist();return result;};" +
+            "Storage.prototype.clear=function(){var result=originalClear.call(this);if(this===localStorage)persist();return result;};" +
+            "window.addEventListener('pagehide',persist);window.__idartiStorageHooked=true;}" +
             "var raw=AndroidBackup.getSnapshot();if(raw){var data=JSON.parse(raw),changed=false;" +
             "Object.keys(data).forEach(function(k){if(localStorage.getItem(k)===null){localStorage.setItem(k,data[k]);changed=true;}});" +
             "if(changed)return 'RESTORED';}" +
@@ -130,6 +132,7 @@ public class MainActivity extends Activity {
             try (FileOutputStream output = openFileOutput("idarti-localstorage-backup.json", MODE_PRIVATE)) {
                 output.write(json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 output.flush();
+                new android.app.backup.BackupManager(MainActivity.this).dataChanged();
             } catch (Exception ignored) {
             }
         }
