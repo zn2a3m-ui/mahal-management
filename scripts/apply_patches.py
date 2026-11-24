@@ -13,8 +13,10 @@ new_cash = old_cash + '\n /* خصم الديون القديمة التي لم ت
 if old_cash in html:
     html = html.replace(old_cash, new_cash, 1)
 
-start = html.index('function groupForm(){')
-end = html.index('function personalDebtForm(){', start)
 group_code = Path('patches/group.js').read_text(encoding='utf-8')
-html = html[:start] + group_code + html[end:]
+marker = '</script>'
+pos = html.rfind(marker)
+if pos < 0:
+    raise SystemExit('Could not locate application script closing tag')
+html = html[:pos] + '\n' + group_code + '\n' + html[pos:]
 p.write_text(html, encoding='utf-8')
