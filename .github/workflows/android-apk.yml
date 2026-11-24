@@ -17,6 +17,20 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Validate app HTML and JavaScript
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('android/app/src/main/assets/index.html').read_text(encoding='utf-8')
+          assert r'\\n<section' not in html, 'Unexpected escaped newline before a section'
+          scripts = re.findall(r'<script>(.*?)</script>', html, re.S)
+          assert len(scripts) == 1, 'Expected exactly one application script'
+          for section in ('home', 'cash', 'debts', 'personalDebts', 'groups', 'settings'):
+              assert f'id="{section}"' in html, f'Missing section: {section}'
+          Path('/tmp/idarti-app.js').write_text(scripts[0], encoding='utf-8')
+          PY
+          node --check /tmp/idarti-app.js
       - name: Build debug APK
         run: gradle -p android assembleDebug
       - name: Upload APK
