@@ -34,6 +34,7 @@ jobs:
           for section in ('m_cash', 'm_debts', 'm_jam'):
               assert f'id="{section}"' in html, f'Missing account page: {section}'
           assert 'function jcalc()' in html and 'J().monthly=40' in html
+          assert 'الإضافة الشهرية للجمعية (40 د.أ إجمالاً)' in html
           assert 'rem=(Number(D.openingBalance)||0)+tot-sp-du' in html, 'Association balance must include monthly additions and subtract purchases and unpaid advances'
           assert 'cashApplied:true' in html and 'label:"دين"' in html
           assert 'تحصيل المشتريات' not in html
