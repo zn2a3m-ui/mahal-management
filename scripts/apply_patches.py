@@ -38,5 +38,18 @@ marker = '</script>'
 pos = html.rfind(marker)
 if pos < 0:
     raise SystemExit('Could not locate application script closing tag')
-html = html[:pos] + '\n' + group_code + '\n' + html[pos:]
+html = html[:pos] + '\n' + group_code + r'''
+// Hide manual backup/copy controls; cloud saving runs automatically in Android.
+(function(){
+ const terms=/نسخة احتياطية|نسخ احتياطي|إنشاء نسخة|استعادة نسخة|تصدير البيانات|استيراد البيانات|نسخ البيانات|backup|restore backup|export data|import data/i;
+ function clean(){
+  document.querySelectorAll('button,a,[role="button"]').forEach(el=>{
+   const label=((el.innerText||'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.getAttribute('title')||'')).trim();
+   if(label && terms.test(label)) el.remove();
+  });
+ }
+ clean();
+ new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});
+})();
+''' + '\n' + html[pos:]
 p.write_text(html, encoding='utf-8')
