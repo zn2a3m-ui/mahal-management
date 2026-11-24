@@ -21,6 +21,16 @@ jobs:
         run: |
           cat app-source/index.html.gz.b64.001 app-source/index.html.gz.b64.002 app-source/index.html.gz.b64.003 | base64 --decode > /tmp/index.html.gz
           gzip -dc /tmp/index.html.gz > android/app/src/main/assets/index.html
+      - name: Inspect restored ledger functions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          h = Path('android/app/src/main/assets/index.html').read_text(encoding='utf-8')
+          for key in ('function addDebt', 'function add', 'C().debts', 'function rCash', 'function pay', 'function delDebt', 'المتبقي المتاح'):
+              i = h.find(key)
+              if i >= 0:
+                  print('\\n###', key, '###\\n', h[max(0, i-180):i+1000])
+          PY
       - name: Apply app patches
         run: python3 scripts/apply_patches.py
       - name: Validate app and JavaScript
