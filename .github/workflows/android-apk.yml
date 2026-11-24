@@ -34,6 +34,9 @@ jobs:
           for section in ('m_cash', 'm_debts', 'm_jam'):
               assert f'id="{section}"' in html, f'Missing account page: {section}'
           assert 'function groupBalance(g)' in html and 'groupMonthsDue(g)' in html
+          assert 'GROUP_MONTHLY_TOTAL=40' in html, 'Monthly association total must be fixed at 40 JOD'
+          assert 'groupAdvancesOutstanding' in html and 'المتبقي المتاح حالياً' in html
+          assert 'function legacyDebtCashBase' in html and 'cashApplied:true' in html
           assert 'تحصيل المشتريات' not in html
           Path('/tmp/idarti-app.js').write_text(scripts[0], encoding='utf-8')
           PY
