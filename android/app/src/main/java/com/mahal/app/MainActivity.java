@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
                 JSONObject release = new JSONObject(body.toString());
                 String tag = release.optString("tag_name", "");
                 JSONArray assets = release.optJSONArray("assets");
-                if (tag.isEmpty() || assets == null || compareVersions(tag, BuildConfig.VERSION_NAME) <= 0) return;
+                if (tag.isEmpty() || assets == null || compareVersions(tag, currentVersionName()) <= 0) return;
                 String downloadUrl = null;
                 for (int i = 0; i < assets.length(); i++) {
                     JSONObject asset = assets.optJSONObject(i);
@@ -180,6 +180,15 @@ public class MainActivity extends Activity {
                 if (connection != null) connection.disconnect();
             }
         }).start();
+    }
+
+    private String currentVersionName() {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            return info.versionName == null ? "0.0.0" : info.versionName;
+        } catch (Exception ignored) {
+            return "0.0.0";
+        }
     }
 
     private int compareVersions(String remote, String current) {
