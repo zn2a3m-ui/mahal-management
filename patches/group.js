@@ -10,3 +10,25 @@ function groupExpenseForm(id){modal('تسجيل مصروف / مشتريات لل
 function addGroupExpense(e,id){e.preventDefault();let g=db.groups.find(x=>x.id===id),v=+gexAmount.value;if(!g||v<=0)return alert('تحقق من المبلغ');g.expenses=g.expenses||[];g.expenses.push({id:uid(),title:gexTitle.value.trim(),amount:v,date:gexDate.value});closeModal();save();groupDetails(id)}
 function toggleGroup(id){let g=db.groups.find(x=>x.id===id);g.status=g.status==='closed'?'active':'closed';save()}
 function delGroup(id){if(confirm('حذف الجمعية وسجلاتها؟')){db.groups=db.groups.filter(x=>x.id!==id);save()}}
+
+// Fix the legacy association "المتبقي المتاح" calculation: add the fixed monthly
+// association amount from the selected start date, then deduct purchases/expenses
+// and the unpaid portion of advances. Collections are shown separately and are
+// not added again, preventing double counting.
+function jmonths(){
+ const q=J().start.split("-"),s=new Date(Number(q[0]),Number(q[1])-1,Number(q[2]||1),12),n=new Date();
+ if(Number.isNaN(s.getTime())||n<s)return 0;
+ let count=(n.getFullYear()-s.getFullYear())*12+n.getMonth()-s.getMonth();
+ if(n.getDate()<s.getDate())count--;
+ return Math.max(0,count+1);
+}
+function jcalc(){
+ if(!Number(J().monthly))J().monthly=40;
+ J().d.forEach(x=>{if(x.r===undefined)x.r=x.paid?x.a:0});
+ J().collections=J().collections||[];
+ const m=jmonths(),tot=m*(Number(J().monthly)||40),col=jsum(J().collections),
+ sp=jsum(J().p),repaid=J().d.reduce((t,x)=>t+(x.r||0),0),
+ du=J().d.reduce((t,x)=>t+x.a-(x.r||0),0),
+ rem=(Number(J().openingBalance)||0)+tot-sp-du;
+ return{m,tot,col,sp,du,repaid,rem};
+}
