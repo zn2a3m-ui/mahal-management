@@ -104,7 +104,9 @@ public class MainActivity extends Activity {
             "window.__idartiStorageHooked=true;}" +
             "var raw=AndroidBackup.getSnapshot();if(raw){var data=JSON.parse(raw),changed=false;" +
             "Object.keys(data).forEach(function(k){if(localStorage.getItem(k)===null){localStorage.setItem(k,data[k]);changed=true;}});" +
-            "if(changed)return 'RESTORED';}}catch(e){}return 'READY';})()";
+            "if(changed)return 'RESTORED';}" +
+            "var current={};for(var j=0;j<localStorage.length;j++){var k=localStorage.key(j);current[k]=localStorage.getItem(k);}" +
+            "AndroidBackup.saveSnapshot(JSON.stringify(current));}catch(e){}return 'READY';})()";
         view.evaluateJavascript(script, value -> {
             if ("\"RESTORED\"".equals(value)) view.reload();
         });
