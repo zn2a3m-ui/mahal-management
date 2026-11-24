@@ -33,19 +33,27 @@ html = html.replace(' $("jcl").innerHTML=D.collections.length?D.collections.map(
 html = html.replace('+"\\nالاشتراكات المحصّلة فعلياً: "+fmt(c.col)', '')
 
 
+# Keep internal automatic cloud backup, but remove all manual backup/copy UI and the
+# association member-subscription collection card from the rendered app.
+html = html.replace('أنشئ نسخة احتياطية لحماية بياناتك', 'تُحفظ بياناتك تلقائياً')
 group_code = Path('patches/group.js').read_text(encoding='utf-8')
 marker = '</script>'
 pos = html.rfind(marker)
 if pos < 0:
     raise SystemExit('Could not locate application script closing tag')
 html = html[:pos] + '\n' + group_code + r'''
-// Hide manual backup/copy controls; cloud saving runs automatically in Android.
 (function(){
- const terms=/نسخة احتياطية|نسخ احتياطي|إنشاء نسخة|استعادة نسخة|تصدير البيانات|استيراد البيانات|نسخ البيانات|backup|restore backup|export data|import data/i;
+ const buttonTerms=/نسخة احتياطية|نسخ احتياطي|إنشاء نسخة|استعادة نسخة|تصدير البيانات|استيراد البيانات|نسخ البيانات|نسخ الملخص|backup|restore backup|export data|import data/i;
+ const cardTerms=/تحصيل اشتراكات الأعضاء|أخذ نسخة احتياطية|استرجاع\s*\/\s*استيراد نسخة|نسخة احتياطية للجمعية/i;
  function clean(){
   document.querySelectorAll('button,a,[role="button"]').forEach(el=>{
    const label=((el.innerText||'')+' '+(el.getAttribute('aria-label')||'')+' '+(el.getAttribute('title')||'')).trim();
-   if(label && terms.test(label)) el.remove();
+   if(label && buttonTerms.test(label)) el.remove();
+  });
+  document.querySelectorAll('.card,details').forEach(el=>{
+   const heading=el.querySelector(':scope > b,:scope > summary');
+   const label=heading ? (heading.innerText||heading.textContent||'').trim() : '';
+   if(label && cardTerms.test(label)) el.remove();
   });
  }
  clean();
