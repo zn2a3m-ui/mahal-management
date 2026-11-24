@@ -23,7 +23,7 @@ jobs:
           from pathlib import Path
           import re
           html = Path('android/app/src/main/assets/index.html').read_text(encoding='utf-8')
-          assert r'\\n<section' not in html, 'Unexpected escaped newline before a section'
+          assert r'\n<section' not in html, 'Unexpected escaped newline before a section'
           scripts = re.findall(r'<script>(.*?)</script>', html, re.S)
           assert len(scripts) == 1, 'Expected exactly one application script'
           for section in ('home', 'cash', 'debts', 'personalDebts', 'groups', 'settings'):
