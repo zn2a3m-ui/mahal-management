@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -23,6 +24,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -68,7 +72,13 @@ public class MainActivity extends Activity {
         settings.setSupportMultipleWindows(false);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        webView.setWebViewClient(new WebViewClient());
+        webView.addJavascriptInterface(new BackupBridge(), "AndroidBackup");
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (url != null && url.startsWith("file:///android_asset/")) installBackupHooks(view);
+            }
+        });
         webView.setWebChromeClient(new WebChromeClient());
         setContentView(webView);
         webView.loadUrl("file:///android_asset/index.html");
@@ -81,6 +91,46 @@ public class MainActivity extends Activity {
         }
         receiverRegistered = true;
         checkForUpdates();
+    }
+
+
+    private void installBackupHooks(WebView view) {
+        String script = "(function(){try{" +
+            "if(!window.__idartiStorageHooked){var original=Storage.prototype.setItem;" +
+            "Storage.prototype.setItem=function(k,v){var result=original.call(this,k,v);" +
+            "if(this===localStorage&&window.AndroidBackup){var snap={};" +
+            "for(var i=0;i<localStorage.length;i++){var key=localStorage.key(i);snap[key]=localStorage.getItem(key);}" +
+            "AndroidBackup.saveSnapshot(JSON.stringify(snap));}return result;};" +
+            "window.__idartiStorageHooked=true;}" +
+            "var raw=AndroidBackup.getSnapshot();if(raw){var data=JSON.parse(raw),changed=false;" +
+            "Object.keys(data).forEach(function(k){if(localStorage.getItem(k)===null){localStorage.setItem(k,data[k]);changed=true;}});" +
+            "if(changed)return 'RESTORED';}}catch(e){}return 'READY';})()";
+        view.evaluateJavascript(script, value -> {
+            if ("\"RESTORED\"".equals(value)) view.reload();
+        });
+    }
+
+    private class BackupBridge {
+        @JavascriptInterface public synchronized String getSnapshot() {
+            try (FileInputStream input = openFileInput("idarti-localstorage-backup.json");
+                 ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                byte[] buffer = new byte[4096];
+                int count;
+                while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+                return output.toString("UTF-8");
+            } catch (Exception ignored) {
+                return "";
+            }
+        }
+
+        @JavascriptInterface public synchronized void saveSnapshot(String json) {
+            if (json == null || json.length() > 4 * 1024 * 1024) return;
+            try (FileOutputStream output = openFileOutput("idarti-localstorage-backup.json", MODE_PRIVATE)) {
+                output.write(json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                output.flush();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     private void checkForUpdates() {
