@@ -26,7 +26,7 @@ html = html.replace('المساهمة الشهرية', 'الإضافة الشه�
 
 # Remove the member-subscription collection card and all related UI hooks.
 html = html.replace('<div>الاشتراكات المحصّلة فعلياً<b id="jcollected"></b></div>', '')
-html = html.replace(' $("jcb").onclick=()=>jadd("collections","jcn","jca");', '')
+html = html.replace('$("jcb").onclick=()=>jadd("collections","jcn","jca");', '')
 html = html.replace('else if(t.dataset.col!==undefined){J().collections.splice(+t.dataset.col,1);save();rJam()}', '')
 html = html.replace(' $("jdp").textContent=fmt(c.repaid);$("jcollected").textContent=fmt(c.col);$("jrem").textContent=fmt(c.rem);', ' $("jdp").textContent=fmt(c.repaid);$("jrem").textContent=fmt(c.rem);')
 html = html.replace(' $("jcl").innerHTML=D.collections.length?D.collections.map((x,i)=>\`<div class="it"><span class="d">\${esc(x.n)}<span>\${fd(x.t)}</span></span><b class="amt in">\${fmt(x.a)}</b><button class="sm" data-col="\${i}">✕</button></div>\`).join(""):\'<div class="e">لا توجد تحصيلات مسجلة</div>\';', '')
