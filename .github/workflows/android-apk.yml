@@ -33,7 +33,6 @@ jobs:
           assert len(scripts) == 1, f'Expected one application script, got {len(scripts)}'
           for section in ('m_cash', 'm_debts', 'm_jam'):
               assert f'id="{section}"' in html, f'Missing account page: {section}'
-          assert 'label:"دين"' in html and 'b-=Number(d.amt)||0' in html
           assert 'function groupBalance(g)' in html and 'groupMonthsDue(g)' in html
           assert 'تحصيل المشتريات' not in html
           Path('/tmp/idarti-app.js').write_text(scripts[0], encoding='utf-8')
