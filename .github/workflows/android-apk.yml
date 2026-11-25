@@ -26,45 +26,78 @@ jobs:
           gzip -dc /tmp/index.html.gz > android/app/src/main/assets/index.html
       - name: Apply app patches
         run: python3 scripts/apply_patches.py
-      - name: Improve member name visibility in advances list (visual only)
+      - name: Improve purchase and advances name visibility (visual only)
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p = Path('android/app/src/main/assets/index.html')
           html = p.read_text(encoding='utf-8')
-          marker = '</body>'
           style = r'''
-          <style id="advances-name-visibility">
-          /* Visual-only adjustment: give member names more room and reduce amount emphasis. */
-          /* The advances card is the direct parent of #jdl; style its real input and rendered rows. */
-          .advance-name-visible #jdn { flex: 2.4 1 0 !important; min-width: 0 !important; font-size: 1.02rem !important; font-weight: 600 !important; }
-          .advance-name-visible #jda { flex: 1 1 0 !important; min-width: 0 !important; font-size: .92rem !important; }
-          .advance-name-visible #jdl .it { align-items: center !important; }
-          .advance-name-visible #jdl .it .d { flex: 1 1 68% !important; min-width: 0 !important; font-size: 1.12rem !important; font-weight: 650 !important; line-height: 1.5 !important; overflow-wrap: anywhere !important; }
-          .advance-name-visible #jdl .it .d > span { font-size: .88rem !important; font-weight: 400 !important; line-height: 1.4 !important; }
-          .advance-name-visible #jdl .it .amt { flex: 0 1 auto !important; max-width: 24% !important; font-size: .88rem !important; white-space: nowrap !important; }
+          <style id="purchase-advances-name-visibility">
+          /* Make purchase/member names readable without touching data or calculations. */
+          .purchase-name-visible #jpn,
+          .advances-name-visible #jdn {
+            flex: 2.5 1 0 !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            font-size: 1.04rem !important;
+            font-weight: 650 !important;
+          }
+          .purchase-name-visible #jpa,
+          .advances-name-visible #jda {
+            flex: 1 1 0 !important;
+            width: 0 !important;
+            min-width: 0 !important;
+            font-size: .92rem !important;
+          }
+          .purchase-name-visible #jpl .it,
+          .advances-name-visible #jdl .it {
+            align-items: center !important;
+            flex-wrap: wrap !important;
+          }
+          .purchase-name-visible #jpl .it > .d,
+          .advances-name-visible #jdl .it > .d {
+            flex: 1 1 68% !important;
+            min-width: 0 !important;
+            font-size: 1.12rem !important;
+            font-weight: 650 !important;
+            line-height: 1.55 !important;
+            overflow-wrap: anywhere !important;
+            white-space: normal !important;
+          }
+          .purchase-name-visible #jpl .it > .d > span,
+          .advances-name-visible #jdl .it > .d > span {
+            display: block !important;
+            font-size: .86rem !important;
+            font-weight: 400 !important;
+            line-height: 1.4 !important;
+          }
+          .purchase-name-visible #jpl .it > .amt,
+          .advances-name-visible #jdl .it > .amt {
+            flex: 0 1 auto !important;
+            max-width: 25% !important;
+            font-size: .9rem !important;
+            white-space: nowrap !important;
+          }
           </style>
           <script>
           (function(){
-            function tuneAdvanceRows(){
-              document.querySelectorAll('.card,section,details').forEach(function(card){
-                var heading=card.querySelector(':scope > b,:scope > h1,:scope > h2,:scope > h3,:scope > summary');
-                if(!heading) return;
-                var title=(heading.innerText||heading.textContent||'').replace(/\\s+/g,' ').trim();
-                if(title.indexOf('السلف')===-1 || title.indexOf('الأعضاء')===-1) return;
-                card.classList.add('advance-name-visible');
-              });
+            function applyNameVisibility(){
+              var purchaseList=document.getElementById('jpl');
+              var advancesList=document.getElementById('jdl');
+              var purchaseCard=purchaseList&&purchaseList.closest('.card');
+              var advancesCard=advancesList&&advancesList.closest('.card');
+              if(purchaseCard) purchaseCard.classList.add('purchase-name-visible');
+              if(advancesCard) advancesCard.classList.add('advances-name-visible');
             }
-            tuneAdvanceRows();
-            new MutationObserver(tuneAdvanceRows).observe(document.documentElement,{childList:true,subtree:true});
+            applyNameVisibility();
+            new MutationObserver(applyNameVisibility).observe(document.documentElement,{childList:true,subtree:true});
           })();
           </script>
           '''
-          if 'id="advances-name-visibility"' not in html:
-              if marker in html:
-                  html = html.replace(marker, style + marker, 1)
-              else:
-                  html += style
+          if 'id="purchase-advances-name-visibility"' not in html:
+              marker = '</body>'
+              html = html.replace(marker, style + marker, 1) if marker in html else html + style
           p.write_text(html, encoding='utf-8')
           PY
       - name: Apply consistent visual polish (CSS only)
