@@ -177,6 +177,28 @@ jobs:
         run: |
           echo "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/idarti-release.p12"
           test -s "$RUNNER_TEMP/idarti-release.p12"
+      - name: Diagnose release keystore safely
+        if: env.HAS_RELEASE_KEY == 'true'
+        env:
+          STORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          EXPECTED_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        shell: bash
+        run: |
+          set +x
+          KEYSTORE="$RUNNER_TEMP/idarti-release.p12"
+          if keytool -list -keystore "$KEYSTORE" -storetype PKCS12 -storepass "$STORE_PASS" >/dev/null 2>&1; then
+            echo "DIAG_STORE_PASSWORD=OK"
+          else
+            echo "DIAG_STORE_PASSWORD=FAILED (keystore unreadable or store password mismatch)"
+            exit 1
+          fi
+          if keytool -list -keystore "$KEYSTORE" -storetype PKCS12 -storepass "$STORE_PASS" -alias "$EXPECTED_ALIAS" >/dev/null 2>&1; then
+            echo "DIAG_ALIAS=OK"
+          else
+            echo "DIAG_ALIAS=FAILED (alias not present in keystore)"
+            exit 1
+          fi
+          echo "DIAG_KEY_PASSWORD=NOT independently testable without attempting signing; Gradle signing result will determine this"
       - name: Build stable signed release APK
         if: env.HAS_RELEASE_KEY == 'true'
         env:
