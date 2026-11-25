@@ -36,9 +36,13 @@ jobs:
           style = r'''
           <style id="advances-name-visibility">
           /* Visual-only adjustment: give member names more room and reduce amount emphasis. */
-          .advance-name-visible .it .d { flex: 1 1 68% !important; min-width: 0 !important; font-size: 1.08rem !important; line-height: 1.45 !important; }
-          .advance-name-visible .it .d > span { font-size: .92rem !important; line-height: 1.4 !important; }
-          .advance-name-visible .it .amt { flex: 0 1 27% !important; max-width: 27% !important; font-size: .88rem !important; white-space: nowrap !important; }
+          /* The advances card is the direct parent of #jdl; style its real input and rendered rows. */
+          .advance-name-visible #jdn { flex: 2.4 1 0 !important; min-width: 0 !important; font-size: 1.02rem !important; font-weight: 600 !important; }
+          .advance-name-visible #jda { flex: 1 1 0 !important; min-width: 0 !important; font-size: .92rem !important; }
+          .advance-name-visible #jdl .it { align-items: center !important; }
+          .advance-name-visible #jdl .it .d { flex: 1 1 68% !important; min-width: 0 !important; font-size: 1.12rem !important; font-weight: 650 !important; line-height: 1.5 !important; overflow-wrap: anywhere !important; }
+          .advance-name-visible #jdl .it .d > span { font-size: .88rem !important; font-weight: 400 !important; line-height: 1.4 !important; }
+          .advance-name-visible #jdl .it .amt { flex: 0 1 auto !important; max-width: 24% !important; font-size: .88rem !important; white-space: nowrap !important; }
           </style>
           <script>
           (function(){
@@ -115,6 +119,8 @@ jobs:
           assert 'cashApplied:true' in html and 'label:"دين"' in html
           assert 'تحصيل المشتريات' not in html
           assert 'advances-name-visibility' in html, 'Missing visual-only advances name styling'
+          assert '.advance-name-visible #jdl .it .d' in html, 'Missing actual advances member-name selector'
+          assert '.advance-name-visible #jdn' in html, 'Missing advances member input selector'
           assert 'app-visual-polish' in html, 'Missing visual polish styles'
           manifest = Path('android/app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
           assert 'android:icon="@mipmap/ic_launcher"' in manifest
