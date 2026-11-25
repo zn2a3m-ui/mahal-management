@@ -78,7 +78,6 @@ jobs:
           .card { background: #FFFFFF !important; border: 1px solid #E5EAF0 !important; }
           .it { background: #FAFBFD !important; }
           input, select, textarea { background: #FFFFFF !important; border: 1px solid #D9E1EA !important; color: #14263D !important; }
-          button:not(.sm), .btn { background-color: #159A75 !important; border-color: #159A75 !important; color: #FFFFFF !important; }
           button.sm { background: transparent !important; color: #64748B !important; }
           h1, h2, h3, .title { color: #14263D !important; }
 
