@@ -7,11 +7,20 @@ function jcalc(){
  D.p=Array.isArray(D.p)?D.p:[];
  D.d=Array.isArray(D.d)?D.d:[];
  D.collections=Array.isArray(D.collections)?D.collections:[];
- D.d.forEach(x=>{if(x.r===undefined)x.r=x.paid?x.a:0});
+ // Preserve legacy records: an old fully-paid advance may only have paid=true.
+ // Normalize every repayment to the range 0..original advance amount.
+ D.d.forEach(x=>{
+  const principal=Math.max(0,Number(x.a)||0);
+  const recorded=x.r===undefined?(x.paid?principal:0):(Number(x.r)||0);
+  x.r=Math.min(principal,Math.max(0,recorded));
+ });
  const m=jmonths(),tot=m*40,col=jsum(D.collections),sp=jsum(D.p),
- repaid=D.d.reduce((t,x)=>t+(Number(x.r)||0),0),
- du=D.d.reduce((t,x)=>t+Math.max(0,(Number(x.a)||0)-(Number(x.r)||0)),0),
- rem=(Number(D.openingBalance)||0)+tot-sp-du;
+ totalAdvances=jsum(D.d.map(x=>x.a)),
+ repaid=jsum(D.d.map(x=>x.r)),
+ du=Math.max(0,totalAdvances-repaid),
+ // Each repayment restores exactly that amount to the association's available balance.
+ // Equivalent to subtracting outstanding advances; keeps old records intact.
+ rem=(Number(D.openingBalance)||0)+tot-sp-totalAdvances+repaid;
  return{m,tot,col,sp,du,repaid,rem};
 }
 J().monthly=40;
