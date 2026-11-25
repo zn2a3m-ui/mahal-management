@@ -70,7 +70,7 @@ jobs:
           import re
           html = Path('android/app/src/main/assets/index.html').read_text(encoding='utf-8')
           scripts = re.findall(r'<script>(.*?)</script>', html, re.S)
-          assert len(scripts) == 1, f'Expected one application script, got {len(scripts)}'
+          assert len(scripts) >= 1, f'Missing application script, got {len(scripts)}'
           for section in ('m_cash', 'm_debts', 'm_jam'):
               assert f'id="{section}"' in html, f'Missing account page: {section}'
           assert 'function jcalc()' in html and 'J().monthly=40' in html
@@ -80,9 +80,10 @@ jobs:
           assert 'تحصيل المشتريات' not in html
           assert 'advances-name-visibility' in html, 'Missing visual-only advances name styling'
           Path('/tmp/idarti-app.js').write_text(scripts[0], encoding='utf-8')
-          Path('/tmp/advances-style.js').write_text(re.search(r'<script>(.*?)</script>', html[html.find('advances-name-visibility'):], re.S).group(1), encoding='utf-8')
+          Path('/tmp/advances-style.js').write_text(scripts[-1], encoding='utf-8')
           PY
           node --check /tmp/idarti-app.js
+          node --check /tmp/advances-style.js
       - name: Decode stable signing key
         if: env.HAS_RELEASE_KEY == 'true'
         env:
