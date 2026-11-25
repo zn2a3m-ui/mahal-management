@@ -36,9 +36,9 @@ jobs:
           style = r'''
           <style id="advances-name-visibility">
           /* Visual-only adjustment: give member names more room and reduce amount emphasis. */
-          .advance-name-visible .it .d,
-          .advance-name-visible .it .d > span { font-size: 1.08rem !important; line-height: 1.45 !important; }
-          .advance-name-visible .it .amt { font-size: .88rem !important; }
+          .advance-name-visible .it .d { flex: 1 1 68% !important; min-width: 0 !important; font-size: 1.08rem !important; line-height: 1.45 !important; }
+          .advance-name-visible .it .d > span { font-size: .92rem !important; line-height: 1.4 !important; }
+          .advance-name-visible .it .amt { flex: 0 1 27% !important; max-width: 27% !important; font-size: .88rem !important; white-space: nowrap !important; }
           </style>
           <script>
           (function(){
