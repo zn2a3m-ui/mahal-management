@@ -74,6 +74,14 @@ jobs:
           /* A consistent visual refresh only: no markup, data, calculations or handlers are changed. */
           body { font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif !important; line-height: 1.55; }
           .card { border-radius: 16px !important; padding: 15px !important; margin-bottom: 13px !important; box-shadow: 0 3px 14px rgba(20,30,50,.055) !important; }
+          body { background: #F3F5F8 !important; color: #14263D !important; }
+          .card { background: #FFFFFF !important; border: 1px solid #E5EAF0 !important; }
+          .it { background: #FAFBFD !important; }
+          input, select, textarea { background: #FFFFFF !important; border: 1px solid #D9E1EA !important; color: #14263D !important; }
+          button:not(.sm), .btn { background-color: #159A75 !important; border-color: #159A75 !important; color: #FFFFFF !important; }
+          button.sm { background: transparent !important; color: #64748B !important; }
+          h1, h2, h3, .title { color: #14263D !important; }
+
           .it { gap: 10px !important; padding: 11px 9px !important; border-radius: 10px !important; }
           .it + .it { border-top: 1px solid rgba(120,130,150,.13) !important; }
           .d { line-height: 1.5 !important; overflow-wrap: anywhere; }
@@ -107,6 +115,12 @@ jobs:
           assert 'cashApplied:true' in html and 'label:"دين"' in html
           assert 'تحصيل المشتريات' not in html
           assert 'advances-name-visibility' in html, 'Missing visual-only advances name styling'
+          assert 'app-visual-polish' in html, 'Missing visual polish styles'
+          manifest = Path('android/app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
+          assert 'android:icon="@mipmap/ic_launcher"' in manifest
+          for icon in ('drawable/ic_launcher_background.xml','drawable/ic_launcher_foreground.xml','drawable/ic_launcher_monochrome.xml','mipmap-anydpi-v26/ic_launcher.xml','mipmap-anydpi/ic_launcher.xml'):
+              assert Path('android/app/src/main/res', icon).is_file(), f'Missing launcher icon resource: {icon}'
+
           Path('/tmp/idarti-app.js').write_text(scripts[0], encoding='utf-8')
           Path('/tmp/advances-style.js').write_text(scripts[-1], encoding='utf-8')
           PY
