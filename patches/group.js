@@ -15,8 +15,8 @@ function jcalc(){
   x.r=Math.min(principal,Math.max(0,recorded));
  });
  const m=jmonths(),tot=m*40,col=jsum(D.collections),sp=jsum(D.p),
- totalAdvances=jsum(D.d.map(x=>x.a)),
- repaid=jsum(D.d.map(x=>x.r)),
+ totalAdvances=D.d.reduce((t,x)=>t+(Number(x.a)||0),0),
+ repaid=D.d.reduce((t,x)=>t+(Number(x.r)||0),0),
  du=Math.max(0,totalAdvances-repaid),
  // Each repayment restores exactly that amount to the association's available balance.
  // Equivalent to subtracting outstanding advances; keeps old records intact.
