@@ -11,6 +11,4 @@
 تبدأ النسخة دون أسماء أو مبالغ تجريبية. البيانات محفوظة محلياً على الهاتف مع نسخة احتياطية واسترجاع منفصل لكل حساب. تسجيل الدخول بحساب Google والمزامنة السحابية غير مفعّلين في هذه النسخة.
 
 ## بناء APK
-تُبنى نسخة Debug تلقائياً من GitHub Actions عند الدفع إلى main أو independent-ledgers-v2. نزّل Artifact باسم idarti-almalia-v2-debug-apk.
-
-هذه نسخة تجريبية Debug وليست إصدار Release موقّعاً بمفتاح إنتاج ثابت.
+تُبنى نسخة Release موقّعة تلقائياً إذا كانت أسرار التوقيع الأربعة مضبوطة في GitHub Actions: ANDROID_KEYSTORE_BASE64 وANDROID_KEYSTORE_PASSWORD وANDROID_KEY_ALIAS وANDROID_KEY_PASSWORD. عند توفرها، نزّل Artifact باسم idarti-almalia-v2-release-apk. إذا لم تتوفر كلها، يُبنى Artifact تجريبي باسم idarti-almalia-v2-debug-apk. يرتفع رقم إصدار Android تلقائياً مع كل تشغيل.
