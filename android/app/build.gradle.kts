@@ -9,8 +9,8 @@ android {
         applicationId = "com.mahal.app"
         minSdk = 23
         targetSdk = 35
-        versionCode = 4
-        versionName = "2.1.0"
+        versionCode = System.getenv("ANDROID_VERSION_CODE")?.toIntOrNull() ?: 4
+        versionName = System.getenv("ANDROID_VERSION_NAME") ?: "2.1.0"
     }
     signingConfigs {
         create("release") {
