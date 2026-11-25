@@ -152,8 +152,11 @@ jobs:
           assert 'cashApplied:true' in html and 'label:"دين"' in html
           assert 'تحصيل المشتريات' not in html
           assert 'advances-name-visibility' in html, 'Missing visual-only advances name styling'
-          assert '.advance-name-visible #jdl .it .d' in html, 'Missing actual advances member-name selector'
-          assert '.advance-name-visible #jdn' in html, 'Missing advances member input selector'
+          assert '.advances-name-visible #jdl .it > .d' in html, 'Missing actual advances member-name selector'
+          assert '.advances-name-visible #jdn' in html, 'Missing advances member input selector'
+          assert '.purchase-name-visible #jpl .it > .d' in html, 'Missing purchase item-name selector'
+          assert '.purchase-name-visible #jpn' in html, 'Missing purchase item-name input selector'
+          assert 'purchase-advances-name-visibility' in html, 'Missing purchase and advances visual styling'
           assert 'app-visual-polish' in html, 'Missing visual polish styles'
           manifest = Path('android/app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
           assert 'android:icon="@mipmap/ic_launcher"' in manifest
