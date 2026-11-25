@@ -63,6 +63,34 @@ jobs:
                   html += style
           p.write_text(html, encoding='utf-8')
           PY
+      - name: Apply consistent visual polish (CSS only)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/src/main/assets/index.html')
+          html = p.read_text(encoding='utf-8')
+          style = r"""
+          <style id="app-visual-polish">
+          /* A consistent visual refresh only: no markup, data, calculations or handlers are changed. */
+          body { font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif !important; line-height: 1.55; }
+          .card { border-radius: 16px !important; padding: 15px !important; margin-bottom: 13px !important; box-shadow: 0 3px 14px rgba(20,30,50,.055) !important; }
+          .it { gap: 10px !important; padding: 11px 9px !important; border-radius: 10px !important; }
+          .it + .it { border-top: 1px solid rgba(120,130,150,.13) !important; }
+          .d { line-height: 1.5 !important; overflow-wrap: anywhere; }
+          .amt { font-variant-numeric: tabular-nums; letter-spacing: .1px; }
+          input, select, textarea { border-radius: 11px !important; min-height: 42px; padding: 9px 11px !important; font: inherit !important; }
+          input:focus, select:focus, textarea:focus { outline: 2px solid rgba(70,120,190,.22) !important; outline-offset: 1px; }
+          button, .btn, .sm { border-radius: 10px !important; font: inherit !important; transition: box-shadow .15s ease, opacity .15s ease; }
+          button:active, .btn:active { opacity: .88; }
+          h1, h2, h3 { line-height: 1.35 !important; letter-spacing: -.15px; }
+          .e { border-radius: 12px !important; padding: 17px 12px !important; }
+          </style>
+          """
+          if 'id="app-visual-polish"' not in html:
+              marker = '</body>'
+              html = html.replace(marker, style + marker, 1) if marker in html else html + style
+              p.write_text(html, encoding='utf-8')
+          PY
       - name: Validate app and JavaScript
         run: |
           python3 - <<'PY'
