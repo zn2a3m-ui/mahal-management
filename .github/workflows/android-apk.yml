@@ -26,6 +26,43 @@ jobs:
           gzip -dc /tmp/index.html.gz > android/app/src/main/assets/index.html
       - name: Apply app patches
         run: python3 scripts/apply_patches.py
+      - name: Improve member name visibility in advances list (visual only)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/src/main/assets/index.html')
+          html = p.read_text(encoding='utf-8')
+          marker = '</body>'
+          style = r'''
+          <style id="advances-name-visibility">
+          /* Visual-only adjustment: give member names more room and reduce amount emphasis. */
+          .advance-name-visible .it .d,
+          .advance-name-visible .it .d > span { font-size: 1.08rem !important; line-height: 1.45 !important; }
+          .advance-name-visible .it .amt { font-size: .88rem !important; }
+          </style>
+          <script>
+          (function(){
+            function tuneAdvanceRows(){
+              document.querySelectorAll('.card,section,details').forEach(function(card){
+                var heading=card.querySelector(':scope > b,:scope > h1,:scope > h2,:scope > h3,:scope > summary');
+                if(!heading) return;
+                var title=(heading.innerText||heading.textContent||'').replace(/\\s+/g,' ').trim();
+                if(title.indexOf('السلف')===-1 || title.indexOf('الأعضاء')===-1) return;
+                card.classList.add('advance-name-visible');
+              });
+            }
+            tuneAdvanceRows();
+            new MutationObserver(tuneAdvanceRows).observe(document.documentElement,{childList:true,subtree:true});
+          })();
+          </script>
+          '''
+          if 'id="advances-name-visibility"' not in html:
+              if marker in html:
+                  html = html.replace(marker, style + marker, 1)
+              else:
+                  html += style
+          p.write_text(html, encoding='utf-8')
+          PY
       - name: Validate app and JavaScript
         run: |
           python3 - <<'PY'
@@ -41,7 +78,9 @@ jobs:
           assert 'rem=(Number(D.openingBalance)||0)+tot-sp-du' in html, 'Association balance must include monthly additions and subtract purchases and unpaid advances'
           assert 'cashApplied:true' in html and 'label:"دين"' in html
           assert 'تحصيل المشتريات' not in html
+          assert 'advances-name-visibility' in html, 'Missing visual-only advances name styling'
           Path('/tmp/idarti-app.js').write_text(scripts[0], encoding='utf-8')
+          Path('/tmp/advances-style.js').write_text(re.search(r'<script>(.*?)</script>', html[html.find('advances-name-visibility'):], re.S).group(1), encoding='utf-8')
           PY
           node --check /tmp/idarti-app.js
       - name: Decode stable signing key
