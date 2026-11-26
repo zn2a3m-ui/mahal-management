@@ -1,0 +1,7 @@
+{
+  "appId": "com.mahal.management",
+  "appName": "إدارة المحل",
+  "webDir": "www",
+  "backgroundColor": "#0A4F4A",
+  "android": { "allowMixedContent": false }
+}

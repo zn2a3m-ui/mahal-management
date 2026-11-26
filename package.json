@@ -1,0 +1,15 @@
+{
+  "name": "mahal-management",
+  "version": "2.0.0",
+  "description": "إدارة المحل: صندوق المحل، إدارة الديون، والجمعية",
+  "private": true,
+  "scripts": {
+    "restore:web": "mkdir -p www && base64 -d www/index.html.gz.b64 | gzip -dc > www/index.html",
+    "android:sync": "npm run restore:web && cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/cli": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  }
+}
