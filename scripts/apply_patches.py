@@ -90,6 +90,6 @@ association_fix = r"""
 marker = '</script>'
 pos = html.rfind(marker)
 if pos < 0: raise SystemExit('Could not locate script closing tag for association fix')
-html = html[:pos] + association_fix + '\\n' + html[pos:]
+html = html[:pos] + association_fix + '\n' + html[pos:]
 
 p.write_text(html, encoding='utf-8')
