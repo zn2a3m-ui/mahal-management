@@ -60,4 +60,36 @@ html = html[:pos] + '\n' + group_code + r'''
  new MutationObserver(clean).observe(document.documentElement,{childList:true,subtree:true});
 })();
 ''' + '\n' + html[pos:]
+
+# Association ledger: confirm deletions and make payment actions resilient.
+association_fix = r"""
+(function(){
+ const section=$("m_jam");
+ section.onclick=function(e){
+  const t=e.target.closest("button"); if(!t||!t.dataset)return;
+  const d=t.dataset;
+  if(d.p!==undefined){if(!confirm("حذف سجل المشتريات هذا؟"))return;J().p.splice(+d.p,1);save();rJam();return}
+  if(d.d!==undefined){const x=J().d[+d.d];if(!x)return;if(!confirm("تأكيد حذف سلفة "+x.n+"؟ لا يمكن التراجع عن الحذف."))return;J().d.splice(+d.d,1);save();rJam();return}
+  if(d.r!==undefined){payI=+d.r;rJam();const q=$("jpv");if(q)q.focus();return}
+  if(d.no!==undefined){payI=-1;rJam();return}
+  if(d.ok!==undefined){
+   const x=J().d[+d.ok];if(!x)return;
+   const left=Math.max(0,(Number(x.a)||0)-(Number(x.r)||0));
+   const field=$("jpv");let v=field?Number(field.value):NaN;
+   if(!Number.isFinite(v)||v===0){msg("أدخل مبلغًا صحيحًا للسداد");return}
+   if(v>0&&v>left)v=left;
+   if(v<0)v=Math.max(v,-(Number(x.r)||0));
+   if(v===0){payI=-1;rJam();return}
+   x.r=(Number(x.r)||0)+v;x.paid=x.r>=(Number(x.a)||0)-0.0001;
+   x.h=Array.isArray(x.h)?x.h:[];x.h.push({v,t:today()});
+   payI=-1;save();rJam();
+  }
+ };
+})();
+"""
+marker = '</script>'
+pos = html.rfind(marker)
+if pos < 0: raise SystemExit('Could not locate script closing tag for association fix')
+html = html[:pos] + association_fix + '\\n' + html[pos:]
+
 p.write_text(html, encoding='utf-8')
