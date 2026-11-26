@@ -1,0 +1,40 @@
+name: Build Android APK
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore web app source
+        run: |
+          mkdir -p www
+          base64 -d www/index.html.gz.b64 | gzip -dc > www/index.html
+          test -s www/index.html
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Create Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mahal-app-new-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
